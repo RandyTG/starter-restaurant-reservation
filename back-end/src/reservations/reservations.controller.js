@@ -38,22 +38,40 @@ function hasOnlyValidProperties(req, res, next) {
 function isReservationValid(req, res, next) {
   const { data } = req.body;
   const today = new Date();
-  const date = new Date(data.reservation_date.concat("T", "14:00:00.000Z"));
-  if (date.getDay() === 2 && date.getDate() < today.getDate()) {
+  const date = new Date(
+    data.reservation_date.concat("T", `${data.reservation_time}:00.000Z`)
+  );
+  const adjustedDate = new Date(date.getTime() + 14400000);
+  if (adjustedDate.getDay() === 2 && adjustedDate.getDate() < today.getDate()) {
     return next({
       status: 400,
-      message:
-        "Reservations cannot be made on a Tuesday or a date in the past.",
+      message: [
+        "Reservations cannot be made on a Tuesday.",
+        "Reservations cannot be made on a date in the past.",
+      ],
     });
-  } else if (date.getDate() < today.getDate()) {
+  } else if (
+    adjustedDate.getDate() < adjustedDate.getDate() ||
+    adjustedDate.getTime() < today.getTime()
+  ) {
     return next({
       status: 400,
-      message: "Reservations cannot be made on a date in the past.",
+      message: ["Reservations cannot be made on a date in the past."],
     });
-  } else if (date.getDay() === 2) {
+  } else if (adjustedDate.getDay() === 2) {
     return next({
       status: 400,
-      message: "Reservations cannot be made on a Tuesday.",
+      message: ["Reservations cannot be made on a Tuesday."],
+    });
+  } else if (adjustedDate.getHours() <= 10 && adjustedDate.getMinutes() <= 29) {
+    return next({
+      status: 400,
+      message: ["Reservations cannot be made before 10:30 AM."],
+    });
+  } else if (adjustedDate.getHours() >= 21 && adjustedDate.getMinutes() >= 31) {
+    return next({
+      status: 400,
+      message: ["Reseervations cannot be made after 9:30 PM."],
     });
   }
   next();
