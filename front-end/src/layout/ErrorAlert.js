@@ -9,11 +9,11 @@ import React from "react";
  */
 
 function ErrorAlert({ error }) {
-  return (
-    error && (
-      <div className="alert alert-danger m-2">Error: {error.message}</div>
-    )
-  );
+  let messages;
+  if (error) {
+    messages = error.message.map((m) => <div> Error: {m}</div>);
+  }
+  return error && <div className="alert alert-danger m-2">{messages}</div>;
 }
 
 export default ErrorAlert;
