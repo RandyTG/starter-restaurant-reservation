@@ -25,7 +25,7 @@ function Dashboard({ date }) {
   };
   const history = useHistory();
 
-  //
+  //------------------------------------------------
   const [reservations, setReservations] = useState([]);
   const [reservationsError, setReservationsError] = useState(null);
 

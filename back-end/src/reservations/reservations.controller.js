@@ -35,6 +35,30 @@ function hasOnlyValidProperties(req, res, next) {
   next();
 }
 
+function isReservationValid(req, res, next) {
+  const { data } = req.body;
+  const today = new Date();
+  const date = new Date(data.reservation_date.concat("T", "14:00:00.000Z"));
+  if (date.getDay() === 2 && date.getDate() < today.getDate()) {
+    return next({
+      status: 400,
+      message:
+        "Reservations cannot be made on a Tuesday or a date in the past.",
+    });
+  } else if (date.getDate() < today.getDate()) {
+    return next({
+      status: 400,
+      message: "Reservations cannot be made on a date in the past.",
+    });
+  } else if (date.getDay() === 2) {
+    return next({
+      status: 400,
+      message: "Reservations cannot be made on a Tuesday.",
+    });
+  }
+  next();
+}
+
 async function create(req, res) {
   const data = await service.create(req.body.data);
   res.status(201).json({ data });
@@ -59,6 +83,7 @@ module.exports = {
   create: [
     hasOnlyValidProperties,
     hasRequiredProperties,
+    isReservationValid,
     asyncErrorBoundary(create),
   ],
   list: asyncErrorBoundary(list),
