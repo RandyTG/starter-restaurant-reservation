@@ -15,7 +15,7 @@ function Dashboard({ date }) {
     const index = search.indexOf("=");
     date = search.slice(index + 1);
   }
-  //put this in its own file within dashboard
+  //put this in its own component within dashboard
   //for button control
   const dateChangeHnalder = (x) => {
     let currentDay = new Date(date.concat("T", "14:00:00.000Z"));
@@ -25,7 +25,7 @@ function Dashboard({ date }) {
   };
   const history = useHistory();
 
-  //
+  //------------------------------------------------
   const [reservations, setReservations] = useState([]);
   const [reservationsError, setReservationsError] = useState(null);
 
