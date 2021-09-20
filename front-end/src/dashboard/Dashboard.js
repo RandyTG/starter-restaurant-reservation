@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useHistory } from "react-router";
-import { listReservations } from "../utils/api";
+import { listReservations, listTables } from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
+import Reservation from "./Reservation";
+import Table from "./Table";
 
 /**
  * Defines the dashboard page.
@@ -27,6 +29,7 @@ function Dashboard({ date }) {
 
   //------------------------------------------------
   const [reservations, setReservations] = useState([]);
+  const [tables, setTables] = useState([]);
   const [reservationsError, setReservationsError] = useState(null);
 
   useEffect(loadDashboard, [date]);
@@ -34,20 +37,48 @@ function Dashboard({ date }) {
   function loadDashboard() {
     const abortController = new AbortController();
     setReservationsError(null);
+    listTables(abortController.signal).then(setTables);
     listReservations({ date }, abortController.signal)
       .then(setReservations)
       .catch(setReservationsError);
     return () => abortController.abort();
   }
 
+  console.log(tables);
+
+  /* 
+  implement table list backend & front end functions
+  implement table list in their own component same idea as reservations
+  */
+
   return (
-    <main>
+    <main className="container">
       <h1>Dashboard</h1>
       <div className="d-md-flex mb-3">
         <h4 className="mb-0">Reservations for date</h4>
       </div>
       <ErrorAlert error={reservationsError} />
-      {JSON.stringify(reservations)}
+      <div className="row">
+        {reservations.length ? (
+          <div className="col">
+            <ul className="list-group">
+              {reservations.map((data) => (
+                <Reservation key={data.reservation_id} data={data} />
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {tables.length ? (
+          <div className="col">
+            <ul className="list-group">
+              {tables.map((data) => (
+                <Table key={data.table_id} data={data} />
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+
       <br></br>
       <div className="btn-group" role="group" aria-label="Basic example">
         <button
