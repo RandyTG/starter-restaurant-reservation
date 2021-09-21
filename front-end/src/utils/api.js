@@ -96,3 +96,18 @@ export async function listTables(signal) {
   const url = new URL(`${API_BASE_URL}/tables`);
   return await fetchJson(url, { headers, signal }, []);
 }
+
+export async function readReservation(reservationId, signal) {
+  const url = new URL(`${API_BASE_URL}/reservations/${reservationId}/seat`);
+  return await fetchJson(url, { headers, signal }, []);
+}
+
+export async function updateTable(tableId, data) {
+  const url = `${API_BASE_URL}/tables/${tableId}/seat`;
+  const options = {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ data }),
+  };
+  return await fetchJson(url, options, {});
+}

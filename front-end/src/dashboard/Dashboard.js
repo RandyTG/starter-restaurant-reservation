@@ -44,13 +44,6 @@ function Dashboard({ date }) {
     return () => abortController.abort();
   }
 
-  console.log(tables);
-
-  /* 
-  implement table list backend & front end functions
-  implement table list in their own component same idea as reservations
-  */
-
   return (
     <main className="container">
       <h1>Dashboard</h1>

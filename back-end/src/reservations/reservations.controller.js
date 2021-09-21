@@ -97,6 +97,15 @@ async function list(req, res) {
   }
 }
 
+async function read(req, res) {
+  const { reservationId } = req.params;
+  const response = await service.read(reservationId);
+  if (!response) {
+    res.status(404).json({ error: "Reservation cannot be found" });
+  }
+  res.json({ data: response });
+}
+
 module.exports = {
   create: [
     hasOnlyValidProperties,
@@ -105,4 +114,5 @@ module.exports = {
     asyncErrorBoundary(create),
   ],
   list: asyncErrorBoundary(list),
+  read: asyncErrorBoundary(read),
 };
