@@ -31,11 +31,27 @@ async function tableExists(req, res, next) {
   return next({ status: 404, message: ["Table cannot be found."] });
 }
 
-async function tableIsNotOccupied(req, res, next) {
+function tableIsOccupied(req, res, next) {
   if (!res.locals.table.reservation_id) {
     return next();
   }
   return next({ status: 400, message: ["Table is occupied"] });
+}
+
+function tableIsNotOccupied(req, res, next) {
+  if (!res.locals.table.reservation_id) {
+    return next({ status: 400, message: ["Table is Not occupied"] });
+  }
+  return next();
+}
+
+async function doesPartyFit(req, res, next) {
+  const reservation = { ...req.body.data };
+  const reservationData = await service.readReservation(reservation);
+  if (res.locals.table.capacity < reservationData.people) {
+    return next({ status: 400, message: ["Table does not fit party size."] });
+  }
+  return next();
 }
 
 async function create(req, res) {
@@ -56,6 +72,12 @@ async function update(req, res) {
     table_id: tableId,
   };
   await service.update(updatedTable);
+  res.sendStatus(204);
+}
+
+async function destoy(req, res) {
+  await service.delete(req.params.tableId);
+  res.sendStatus(204);
 }
 
 module.exports = {
@@ -67,7 +89,14 @@ module.exports = {
   list: asyncErrorBoundary(list),
   update: [
     asyncErrorBoundary(tableExists),
-    asyncErrorBoundary(tableIsNotOccupied),
+    asyncErrorBoundary(doesPartyFit),
+    tableIsOccupied,
     asyncErrorBoundary(update),
+  ],
+
+  delete: [
+    asyncErrorBoundary(tableExists),
+    tableIsNotOccupied,
+    asyncErrorBoundary(destoy),
   ],
 };

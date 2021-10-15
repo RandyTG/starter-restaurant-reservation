@@ -8,7 +8,14 @@ function create(table) {
 }
 
 function list() {
-  return knex("tables").select("*");
+  return knex("tables").select("*").orderBy("table_name");
+}
+
+function readReservation(updatedTable) {
+  return knex("reservations")
+    .select("*")
+    .where({ reservation_id: updatedTable.reservation_id })
+    .first();
 }
 
 function read(tableId) {
@@ -16,11 +23,17 @@ function read(tableId) {
 }
 
 function update(updatedTable) {
-  console.log(updatedTable);
   return knex("tables")
     .select("*")
     .where({ table_id: updatedTable.table_id })
     .update(updatedTable, "*");
+}
+
+function destroy(tableId) {
+  return knex("tables")
+    .select("*")
+    .where({ table_id: tableId })
+    .update({ reservation_id: null });
 }
 
 module.exports = {
@@ -28,4 +41,6 @@ module.exports = {
   list,
   update,
   read,
+  readReservation,
+  delete: destroy,
 };

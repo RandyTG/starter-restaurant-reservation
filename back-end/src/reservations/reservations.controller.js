@@ -38,6 +38,8 @@ function hasOnlyValidProperties(req, res, next) {
 function isReservationValid(req, res, next) {
   const { data } = req.body;
   const today = new Date();
+  console.log(data.people);
+  const { people } = data;
   const date = new Date(
     data.reservation_date.concat("T", `${data.reservation_time}:00.000Z`)
   );
@@ -71,10 +73,24 @@ function isReservationValid(req, res, next) {
   } else if (adjustedDate.getHours() >= 21 && adjustedDate.getMinutes() >= 31) {
     return next({
       status: 400,
-      message: ["Reseervations cannot be made after 9:30 PM."],
+      message: ["Reservations cannot be made after 9:30 PM."],
+    });
+  } else if (isNaN(people)) {
+    return next({
+      status: 400,
+      message: ["Reservations party needs to be at least 1"],
     });
   }
   next();
+}
+
+async function reservationExists(req, res, next) {
+  const { reservationId } = req.params;
+  const reservation = await service.read(reservationId);
+  if (reservation) {
+    return next();
+  }
+  return next({ status: 404, message: ["Reservation cannot be found."] });
 }
 
 async function create(req, res) {
@@ -87,6 +103,16 @@ async function create(req, res) {
 
 async function list(req, res) {
   const date = req.query.date;
+  if (!date) {
+    const phoneNumber = req.query.mobile_phone;
+    const response = await service.search(phoneNumber);
+    if (!response) {
+      res.json({
+        data: [],
+      });
+    }
+    res.json({ data: response });
+  }
   const response = await service.list(date);
   if (!response) {
     res.json({
@@ -106,7 +132,23 @@ async function read(req, res) {
   res.json({ data: response });
 }
 
+async function update(req, res) {
+  const { reservationId } = req.params;
+
+  const updatedReservation = {
+    ...req.body.data,
+    reservation_id: reservationId,
+  };
+  await service.update(updatedReservation);
+  res.sendStatus(204);
+}
+
 module.exports = {
+  update: [
+    asyncErrorBoundary(reservationExists),
+    isReservationValid,
+    asyncErrorBoundary(update),
+  ],
   create: [
     hasOnlyValidProperties,
     hasRequiredProperties,
