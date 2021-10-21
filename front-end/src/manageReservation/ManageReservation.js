@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router";
-import { listTables, readReservation, updateTable } from "../utils/api";
+import {
+  listTables,
+  readReservation,
+  updateTable,
+  updateReservation,
+} from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
+import Reservation from "../utils/Reservation";
+import SeatForm from "./SeatForm";
 
 function ManageReservation() {
   const [tables, setTables] = useState([]);
@@ -21,13 +28,17 @@ function ManageReservation() {
     return () => abortController.abort();
   }, [reservationId]);
 
-  const options = tables.map((table) => {
-    return (
-      <option key={table.table_id} value={table.table_id}>
-        {table.table_name} - {table.capacity}
-      </option>
-    );
-  });
+  useEffect(() => {
+    const abortController = new AbortController();
+    async function update() {
+      if (reservation && reservation.status === "seated") {
+        await updateReservation(reservationId, reservation);
+        history.push("/dashboard");
+      }
+    }
+    update();
+    return () => abortController.abort();
+  }, [reservation, reservationId, history]);
 
   const handleChange = ({ target: { name, value } }) => {
     setFormData((previousFormData) => ({
@@ -36,13 +47,18 @@ function ManageReservation() {
     }));
   };
 
+  //bug: reservation state not updating properly
   const handleSubmit = async (event) => {
     setTablesError(null);
     event.preventDefault();
     try {
       await updateTable(formData.table_id, {
         reservation_id: reservationId,
-      }).then(history.push("/dashboard"));
+      });
+      setReservation((previousReservation) => ({
+        ...previousReservation,
+        status: "seated",
+      }));
     } catch (error) {
       setTablesError(error);
     }
@@ -53,40 +69,13 @@ function ManageReservation() {
       <div>
         <h2>Manage Reservation</h2>
         <ErrorAlert error={tablesError} />
-        <li className="list-group-item d-flex justify-content-between align-items-start">
-          <div className="ms-2 me-auto">
-            <div className="fw-bold">
-              {reservation.first_name} {reservation.last_name}
-            </div>
-          </div>
-          <span className="badge bg-primary rounded-pill">
-            Party size:{reservation.people}
-          </span>
-        </li>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="table_id">Select Table</label>
-            <br />
-            <select
-              onChange={handleChange}
-              className="form-select"
-              name="table_id"
-              aria-label="Default select example"
-            >
-              <option defaultValue>Open this select menu</option>
-              {options}
-            </select>
-          </div>
-          <button
-            onClick={() => history.push("/dashboard")}
-            className="mr-2 btn btn-secondary"
-          >
-            Cancel
-          </button>
-          <button type="submit" className="mr-2 btn btn-primary">
-            Submit
-          </button>
-        </form>
+        <Reservation reservation={reservation} buttons={false} />
+        <SeatForm
+          handleChange={handleChange}
+          handleSubmit={handleSubmit}
+          tables={tables}
+          history={history}
+        />
       </div>
     </main>
   );

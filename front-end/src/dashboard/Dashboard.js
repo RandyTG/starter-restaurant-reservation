@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useHistory } from "react-router";
+import { useLocation } from "react-router";
+import Pagination from "./Pagination";
 import { listReservations, listTables } from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
-import Reservation from "./Reservation";
+import Reservation from "../utils/Reservation";
 import Table from "./Table";
 
 /**
@@ -12,90 +13,77 @@ import Table from "./Table";
  * @returns {JSX.Element}
  */
 function Dashboard({ date }) {
+  //parses search query parameter if any
   const { search } = useLocation();
   if (search) {
     const index = search.indexOf("=");
     date = search.slice(index + 1);
   }
-  //put this in its own component within dashboard
-  //for button control
-  const dateChangeHnalder = (x) => {
-    let currentDay = new Date(date.concat("T", "14:00:00.000Z"));
-    let day = currentDay.setDate(currentDay.getDate() + x);
-    const requestDay = new Date(day).toISOString().slice(0, 10);
-    history.push(`/dashboard?date=${requestDay}`);
-  };
-  const history = useHistory();
 
-  //------------------------------------------------
   const [reservations, setReservations] = useState([]);
   const [tables, setTables] = useState([]);
   const [reservationsError, setReservationsError] = useState(null);
+  const [componentReload, setComponentReload] = useState(false);
 
-  useEffect(loadDashboard, [date]);
+  useEffect(loadDashboard, [date, componentReload]);
 
   function loadDashboard() {
     const abortController = new AbortController();
     setReservationsError(null);
-    listTables(abortController.signal).then(setTables);
     listReservations({ date }, abortController.signal)
       .then(setReservations)
       .catch(setReservationsError);
+    listTables(abortController.signal).then(setTables);
     return () => abortController.abort();
   }
 
+  const resDate = date.split("-");
+  const orderedDate = [resDate[1], resDate[2], resDate[0]].join("/");
+
   return (
-    <main className="container">
+    <main className="ml-0 ">
       <h1>Dashboard</h1>
       <div className="d-md-flex mb-3">
-        <h4 className="mb-0">Reservations for date</h4>
+        <h4 className="mb-0">Reservations for date {orderedDate}</h4>
       </div>
       <ErrorAlert error={reservationsError} />
-      <div className="row">
-        {reservations.length ? (
-          <div className="col">
-            <ul className="list-group">
-              {reservations.map((data) => (
-                <Reservation key={data.reservation_id} data={data} />
-              ))}
-            </ul>
-          </div>
-        ) : null}
+      <div className="row ">
+        <div className="col-md-8">
+          {reservations.length
+            ? reservations.map((data) => {
+                if (data.status === "finished" || data.status === "cancelled") {
+                  return null;
+                } else {
+                  return (
+                    <Reservation
+                      key={data.reservation_id}
+                      componentReload={componentReload}
+                      setComponentReload={setComponentReload}
+                      reservation={data}
+                      buttons={true}
+                    />
+                  );
+                }
+              })
+            : null}
+        </div>
         {tables.length ? (
-          <div className="col">
+          <div className="col-md-4">
             <ul className="list-group">
               {tables.map((data) => (
-                <Table key={data.table_id} data={data} />
+                <Table
+                  key={data.table_id}
+                  componentReload={componentReload}
+                  setComponentReload={setComponentReload}
+                  data={data}
+                />
               ))}
             </ul>
           </div>
         ) : null}
       </div>
-
       <br></br>
-      <div className="btn-group" role="group" aria-label="Basic example">
-        <button
-          onClick={() => dateChangeHnalder(-1)}
-          type="button"
-          className="btn btn-primary"
-        >
-          Previous Day
-        </button>
-        <button
-          onClick={() => dateChangeHnalder(1)}
-          type="button"
-          className="btn btn-primary"
-        >
-          Next Day
-        </button>
-        <button
-          onClick={() => history.push(`/dashboard`)}
-          type="button"
-          className="btn btn-primary"
-        >
-          Today
-        </button>
-      </div>
+      <Pagination date={date} />
     </main>
   );
 }

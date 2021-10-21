@@ -17,6 +17,7 @@ const VALID_PROPERTIES = [
   "reservation_date",
   "reservation_time",
   "people",
+  "status",
 ];
 
 function hasOnlyValidProperties(req, res, next) {
@@ -37,18 +38,57 @@ function hasOnlyValidProperties(req, res, next) {
 
 function isReservationValid(req, res, next) {
   const { data } = req.body;
+  const { people } = data;
+  const { status } = data;
+
+  if (res.locals.reservation) {
+    const currentReservationData = res.locals.reservation;
+    if (currentReservationData.status === "finished") {
+      next({
+        status: 400,
+        message: "a finished reservation cannot be updated",
+      });
+    }
+    const updatedData = Object.values(data);
+    const currentData = Object.values(currentReservationData);
+
+    if (
+      new Date(data.reservation_date).toString() ==
+      currentReservationData.reservation_date.toString()
+    ) {
+      const similarValues = currentData.filter((value) =>
+        updatedData.includes(value)
+      );
+
+      if (
+        similarValues.length >= 6 &&
+        data.status !== currentReservationData.status
+      ) {
+        return next();
+      }
+    }
+  }
+
   const today = new Date();
   const date = new Date(
-    data.reservation_date.concat("T", `${data.reservation_time}:00.000Z`)
+    data.reservation_date
+      .slice(0, 10)
+      .concat("T", `${data.reservation_time.slice(0, 5)}:00.000Z`)
   );
   const adjustedDate = new Date(date.getTime() + 14400000);
-  if (adjustedDate.getDay() === 2 && adjustedDate.getDate() < today.getDate()) {
+  if (date == "Invalid Date") {
     return next({
       status: 400,
-      message: [
-        "Reservations cannot be made on a Tuesday.",
-        "Reservations cannot be made on a date in the past.",
-      ],
+      message: "reservation_time or reservation_date properies are invalid.",
+    });
+  } else if (
+    adjustedDate.getDay() === 2 &&
+    adjustedDate.getDate() < today.getDate()
+  ) {
+    return next({
+      status: 400,
+      message:
+        "Reservations cannot be made on a Tuesday as the restaurant is closed. Reservations cannot be made on a date in the past. Only future reservations.",
     });
   } else if (
     adjustedDate.getDate() < adjustedDate.getDate() ||
@@ -56,25 +96,62 @@ function isReservationValid(req, res, next) {
   ) {
     return next({
       status: 400,
-      message: ["Reservations cannot be made on a date in the past."],
+      message:
+        "Reservations cannot be made on a date in the past. Only future reservations.",
     });
   } else if (adjustedDate.getDay() === 2) {
     return next({
       status: 400,
-      message: ["Reservations cannot be made on a Tuesday."],
+      message:
+        "Reservations cannot be made on a Tuesday as the restaurant is closed.",
     });
-  } else if (adjustedDate.getHours() <= 10 && adjustedDate.getMinutes() <= 29) {
+  } else if (
+    adjustedDate.getHours() <= 10 ||
+    (adjustedDate.getHours() <= 10 && adjustedDate.getMinutes() <= 29)
+  ) {
     return next({
       status: 400,
-      message: ["Reservations cannot be made before 10:30 AM."],
+      message: "Reservations cannot be made before 10:30 AM.",
     });
-  } else if (adjustedDate.getHours() >= 21 && adjustedDate.getMinutes() >= 31) {
+  } else if (
+    adjustedDate.getHours() >= 21 ||
+    (adjustedDate.getHours() >= 21 && adjustedDate.getMinutes() >= 31)
+  ) {
     return next({
       status: 400,
-      message: ["Reseervations cannot be made after 9:30 PM."],
+      message: "Reservations cannot be made after 9:30 PM.",
+    });
+  } else if (isNaN(people)) {
+    return next({
+      status: 400,
+      message: "Reservations party needs a number of people",
+    });
+  } else if (people < 0) {
+    return next({
+      status: 400,
+      message: "Reservations party needs to be at least 1",
+    });
+  } else if (status !== "booked") {
+    return next({
+      status: 400,
+      message: "status can not be seated, finished, unknown",
     });
   }
+
   next();
+}
+
+async function reservationExists(req, res, next) {
+  const { reservation_id } = req.params;
+  const reservation = await service.read(reservation_id);
+  if (reservation) {
+    res.locals.reservation = reservation;
+    return next();
+  }
+  return next({
+    status: 404,
+    message: `Reservation ${reservation_id} cannot be found.`,
+  });
 }
 
 async function create(req, res) {
@@ -87,6 +164,16 @@ async function create(req, res) {
 
 async function list(req, res) {
   const date = req.query.date;
+  if (!date) {
+    const phoneNumber = req.query.mobile_phone;
+    const response = await service.search(phoneNumber);
+    if (!response) {
+      res.json({
+        data: [],
+      });
+    }
+    res.json({ data: response });
+  }
   const response = await service.list(date);
   if (!response) {
     res.json({
@@ -98,15 +185,31 @@ async function list(req, res) {
 }
 
 async function read(req, res) {
-  const { reservationId } = req.params;
-  const response = await service.read(reservationId);
+  const { reservation_id } = req.params;
+  const response = await service.read(reservation_id);
   if (!response) {
     res.status(404).json({ error: "Reservation cannot be found" });
   }
   res.json({ data: response });
 }
 
+async function update(req, res) {
+  const { reservation_id } = req.params;
+
+  const updatedReservation = {
+    ...req.body.data,
+    reservation_id: reservation_id,
+  };
+  await service.update(updatedReservation);
+  res.sendStatus(204);
+}
+
 module.exports = {
+  update: [
+    asyncErrorBoundary(reservationExists),
+    isReservationValid,
+    asyncErrorBoundary(update),
+  ],
   create: [
     hasOnlyValidProperties,
     hasRequiredProperties,

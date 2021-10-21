@@ -1,4 +1,61 @@
 .side-bar {
-  background-color: #393a44;
+  background-color: #353535;
   min-width: 200px;
+}
+
+.content {
+  background-color: rgb(248, 248, 248);
+}
+
+.btn-prm {
+  background-color: #468286;
+  color: white;
+  box-shadow: 0 5px 13px 0 rgba(0, 0, 0, 0.2), 0 3px 17px 0 rgba(0, 0, 0, 0.19);
+}
+
+.btn-prm:hover,
+.btn-tm:hover {
+  color: white;
+  background-color: #38686b;
+}
+
+.btn-tm {
+  background-color: #468286;
+  color: white;
+}
+
+.btn-sec {
+  background-color: #284b63;
+  color: white;
+  box-shadow: 0 5px 13px 0 rgba(0, 0, 0, 0.2), 0 3px 17px 0 rgba(0, 0, 0, 0.19);
+}
+
+.btn-sec:hover {
+  color: white;
+  background-color: #1e3748;
+}
+
+.btn-can {
+  background-color: #707070;
+  color: white;
+  box-shadow: 0 5px 13px 0 rgba(0, 0, 0, 0.2), 0 3px 17px 0 rgba(0, 0, 0, 0.19);
+}
+
+.btn-can:hover {
+  background-color: #5c5c5c;
+  color: white;
+}
+
+.status-text {
+  background-color: #284b63;
+  color: white;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.status-occupied {
+  background-color: #468286;
+  color: white;
+  padding: 4px;
+  border-radius: 4px;
 }

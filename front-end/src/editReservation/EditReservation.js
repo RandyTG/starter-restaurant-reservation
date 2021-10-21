@@ -1,23 +1,21 @@
-import React, { useState } from "react";
-import { useHistory } from "react-router";
+import React, { useState, useEffect } from "react";
+import { useHistory, useParams } from "react-router";
 import ErrorAlert from "../layout/ErrorAlert";
+import { readReservation, updateReservation } from "../utils/api";
 import ReservationForm from "../utils/ReservationForm";
-import { createReservation } from "../utils/api";
 
-function NewReservation() {
-  const history = useHistory();
+function EditReservation() {
   const [errorMessage, setErrorMessage] = useState(null);
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    mobile_number: "",
-    reservation_date: "",
-    reservation_time: "",
-    people: "",
-    status: "booked",
-  });
+  const [formData, setFormData] = useState({});
+  const history = useHistory();
+  const { reservationId } = useParams();
 
-  console.log(formData.people);
+  useEffect(() => {
+    const abortController = new AbortController();
+    readReservation(reservationId, abortController.signal).then(setFormData);
+    return () => abortController.abort();
+  }, [reservationId]);
+
   const handleFormChange = ({ target: { name, value } }) => {
     setFormData((previousFormData) => ({
       ...previousFormData,
@@ -29,8 +27,8 @@ function NewReservation() {
     setErrorMessage(null);
     event.preventDefault();
     try {
-      await createReservation(formData);
-      history.push(`/dashboard?date=${formData.reservation_date}`);
+      await updateReservation(reservationId, formData);
+      history.push("/dashboard");
     } catch (error) {
       setErrorMessage(error);
     }
@@ -39,7 +37,7 @@ function NewReservation() {
   return (
     <main>
       <div>
-        <h2>New Reservation</h2>
+        <h2>Edit Reservation</h2>
         <ErrorAlert error={errorMessage} />
         <ReservationForm
           handleSubmit={handleSubmit}
@@ -52,4 +50,4 @@ function NewReservation() {
   );
 }
 
-export default NewReservation;
+export default EditReservation;

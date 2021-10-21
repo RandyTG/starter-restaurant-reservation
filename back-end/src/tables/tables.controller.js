@@ -21,9 +21,28 @@ function hasOnlyValidProperties(req, res, next) {
   next();
 }
 
+function isTableValid(req, res, next) {
+  const { data } = req.body;
+
+  const { table_name } = data;
+  console.log(data, table_name.length);
+  if (table_name.length === 1) {
+    return next({
+      status: 400,
+      message: "table_name must be at least 2 characters",
+    });
+  } else if (isNaN(data.capacity)) {
+    return next({
+      status: 400,
+      message: "Table capacity must be a number",
+    });
+  }
+  next();
+}
+
 async function tableExists(req, res, next) {
-  const { tableId } = req.params;
-  const table = await service.read(tableId);
+  const { table_id } = req.params;
+  const table = await service.read(table_id);
   if (table) {
     res.locals.table = table;
     return next();
@@ -31,11 +50,27 @@ async function tableExists(req, res, next) {
   return next({ status: 404, message: ["Table cannot be found."] });
 }
 
-async function tableIsNotOccupied(req, res, next) {
+function tableIsOccupied(req, res, next) {
   if (!res.locals.table.reservation_id) {
     return next();
   }
   return next({ status: 400, message: ["Table is occupied"] });
+}
+
+function tableIsNotOccupied(req, res, next) {
+  if (!res.locals.table.reservation_id) {
+    return next({ status: 400, message: ["Table is Not occupied"] });
+  }
+  return next();
+}
+
+async function doesPartyFit(req, res, next) {
+  const reservation = { ...req.body.data };
+  const reservationData = await service.readReservation(reservation);
+  if (res.locals.table.capacity < reservationData.people) {
+    return next({ status: 400, message: ["Table does not fit party size."] });
+  }
+  return next();
 }
 
 async function create(req, res) {
@@ -49,25 +84,39 @@ async function list(req, res) {
 }
 
 async function update(req, res) {
-  const { tableId } = req.params;
+  const { table_id } = req.params;
 
   const updatedTable = {
     ...req.body.data,
-    table_id: tableId,
+    table_id: table_id,
   };
   await service.update(updatedTable);
+  res.sendStatus(204);
+}
+
+async function destoy(req, res) {
+  await service.delete(req.params.tableId);
+  res.sendStatus(204);
 }
 
 module.exports = {
   create: [
     hasOnlyValidProperties,
     hasRequiredProperties,
+    isTableValid,
     asyncErrorBoundary(create),
   ],
   list: asyncErrorBoundary(list),
   update: [
     asyncErrorBoundary(tableExists),
-    asyncErrorBoundary(tableIsNotOccupied),
+    asyncErrorBoundary(doesPartyFit),
+    tableIsOccupied,
     asyncErrorBoundary(update),
+  ],
+
+  delete: [
+    asyncErrorBoundary(tableExists),
+    tableIsNotOccupied,
+    asyncErrorBoundary(destoy),
   ],
 };
