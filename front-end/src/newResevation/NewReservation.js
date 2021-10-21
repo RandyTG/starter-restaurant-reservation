@@ -14,8 +14,10 @@ function NewReservation() {
     reservation_date: "",
     reservation_time: "",
     people: "",
+    status: "booked",
   });
 
+  console.log(formData.people);
   const handleFormChange = ({ target: { name, value } }) => {
     setFormData((previousFormData) => ({
       ...previousFormData,

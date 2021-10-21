@@ -7,6 +7,8 @@ function Reservation({
   componentReload,
   buttons,
 }) {
+  const { reservation_id } = reservation;
+
   const handleCancelButton = async () => {
     if (
       window.confirm(
@@ -36,8 +38,6 @@ function Reservation({
     const date = reservation.reservation_date.slice(0, 10).split("-");
     reservationDate = [date[1], date[2], date[0]].join("/");
   }
-
-  const reservation_id = reservation.reservation_Id;
 
   return (
     <div className="col">

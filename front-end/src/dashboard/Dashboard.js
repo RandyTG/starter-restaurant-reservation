@@ -37,8 +37,6 @@ function Dashboard({ date }) {
     return () => abortController.abort();
   }
 
-  console.log(isNaN(1));
-
   const resDate = date.split("-");
   const orderedDate = [resDate[1], resDate[2], resDate[0]].join("/");
 
