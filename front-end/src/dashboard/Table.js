@@ -16,14 +16,7 @@ function Table({ data, setComponentReload, componentReload }) {
       )
     ) {
       const abortController = new AbortController();
-      const reservation = await readReservation(
-        reservationId,
-        abortController.signal
-      );
-      reservation.status = "finished";
-      console.log(reservation);
       await deleteTableAssignment(data.table_id);
-      await updateReservation(reservationId, reservation);
       setComponentReload(!componentReload);
       setOccupied(false);
     }

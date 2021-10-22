@@ -95,7 +95,8 @@ async function update(req, res) {
 }
 
 async function destoy(req, res) {
-  await service.delete(req.params.tableId);
+  const reservation = res.locals.table.reservation_id;
+  await service.delete(req.params.table_id, reservation);
   res.sendStatus(204);
 }
 
