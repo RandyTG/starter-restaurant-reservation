@@ -90,8 +90,8 @@ async function update(req, res) {
     ...req.body.data,
     table_id: table_id,
   };
-  await service.update(updatedTable);
-  res.sendStatus(204);
+  const data = await service.update(updatedTable);
+  res.json({ data });
 }
 
 async function destoy(req, res) {

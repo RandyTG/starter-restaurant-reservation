@@ -23,10 +23,16 @@ function read(tableId) {
 }
 
 function update(updatedTable) {
-  return knex("tables")
-    .select("*")
-    .where({ table_id: updatedTable.table_id })
-    .update(updatedTable, "*");
+  return knex.transaction(async (t) => {
+    await knex("reservations")
+      .where({ reservation_id: updatedTable.reservation_id })
+      .update({ status: "seated" })
+      .transacting(t);
+
+    return knex("tables")
+      .where({ table_id: updatedTable.table_id })
+      .update(updatedTable, "*");
+  });
 }
 
 function destroy(tableId, reservationId) {

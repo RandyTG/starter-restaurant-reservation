@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router";
-import {
-  listTables,
-  readReservation,
-  updateTable,
-  updateReservation,
-} from "../utils/api";
+import { listTables, readReservation, updateTable } from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
 import Reservation from "../utils/Reservation";
 import SeatForm from "./SeatForm";
@@ -28,18 +23,6 @@ function ManageReservation() {
     return () => abortController.abort();
   }, [reservationId]);
 
-  useEffect(() => {
-    const abortController = new AbortController();
-    async function update() {
-      if (reservation && reservation.status === "seated") {
-        await updateReservation(reservationId, reservation);
-        history.push("/dashboard");
-      }
-    }
-    update();
-    return () => abortController.abort();
-  }, [reservation, reservationId, history]);
-
   const handleChange = ({ target: { name, value } }) => {
     setFormData((previousFormData) => ({
       ...previousFormData,
@@ -47,7 +30,6 @@ function ManageReservation() {
     }));
   };
 
-  //bug: reservation state not updating properly
   const handleSubmit = async (event) => {
     setTablesError(null);
     event.preventDefault();
@@ -55,10 +37,7 @@ function ManageReservation() {
       await updateTable(formData.table_id, {
         reservation_id: reservationId,
       });
-      setReservation((previousReservation) => ({
-        ...previousReservation,
-        status: "seated",
-      }));
+      history.push("/dashboard");
     } catch (error) {
       setTablesError(error);
     }

@@ -39,7 +39,7 @@ function hasOnlyValidProperties(req, res, next) {
 function isReservationValid(req, res, next) {
   const { data } = req.body;
   const { people } = data;
-  const { status } = data;
+  let { status } = data;
 
   if (res.locals.reservation) {
     const currentReservationData = res.locals.reservation;
@@ -67,6 +67,10 @@ function isReservationValid(req, res, next) {
         return next();
       }
     }
+  }
+
+  if (!status) {
+    status = "booked";
   }
 
   const today = new Date();
@@ -134,7 +138,7 @@ function isReservationValid(req, res, next) {
   } else if (status !== "booked") {
     return next({
       status: 400,
-      message: "status can not be seated, finished, unknown",
+      message: `status can not be ${status}`,
     });
   }
 
@@ -158,6 +162,7 @@ async function create(req, res) {
   const data = await service.create(req.body.data);
   res.status(201).json({ data });
 }
+
 /**
  * List handler for reservation resources
  */

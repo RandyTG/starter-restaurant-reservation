@@ -1,9 +1,5 @@
 import React, { useState } from "react";
-import {
-  deleteTableAssignment,
-  updateReservation,
-  readReservation,
-} from "../utils/api";
+import { deleteTableAssignment } from "../utils/api";
 
 function Table({ data, setComponentReload, componentReload }) {
   const [occupied, setOccupied] = useState(data.reservation_id ? true : false);
