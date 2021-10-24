@@ -6,7 +6,15 @@ import ReservationForm from "../utils/ReservationForm";
 
 function EditReservation() {
   const [errorMessage, setErrorMessage] = useState(null);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    mobile_number: "",
+    reservation_date: "",
+    reservation_time: "",
+    people: "",
+    status: "",
+  });
   const history = useHistory();
   const { reservationId } = useParams();
 
@@ -17,10 +25,17 @@ function EditReservation() {
   }, [reservationId]);
 
   const handleFormChange = ({ target: { name, value } }) => {
-    setFormData((previousFormData) => ({
-      ...previousFormData,
-      [name]: value,
-    }));
+    if (name === "people") {
+      setFormData((previousFormData) => ({
+        ...previousFormData,
+        [name]: Number(value),
+      }));
+    } else {
+      setFormData((previousFormData) => ({
+        ...previousFormData,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -33,6 +48,13 @@ function EditReservation() {
       setErrorMessage(error);
     }
   };
+
+  if (formData.reservation_date && formData.reservation_date.length > 10) {
+    setFormData((previousFormData) => ({
+      ...previousFormData,
+      reservation_date: formData.reservation_date.slice(0, 10),
+    }));
+  }
 
   return (
     <main>

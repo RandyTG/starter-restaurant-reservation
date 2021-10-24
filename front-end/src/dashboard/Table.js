@@ -1,13 +1,8 @@
 import React, { useState } from "react";
-import {
-  deleteTableAssignment,
-  updateReservation,
-  readReservation,
-} from "../utils/api";
+import { deleteTableAssignment } from "../utils/api";
 
 function Table({ data, setComponentReload, componentReload }) {
   const [occupied, setOccupied] = useState(data.reservation_id ? true : false);
-  const reservationId = data.reservation_id;
 
   const unseatButtonHandler = async () => {
     if (
@@ -15,15 +10,7 @@ function Table({ data, setComponentReload, componentReload }) {
         "Is this table ready to seat new guests? This cannot be undone."
       )
     ) {
-      const abortController = new AbortController();
-      const reservation = await readReservation(
-        reservationId,
-        abortController.signal
-      );
-      reservation.status = "finished";
-      console.log(reservation);
       await deleteTableAssignment(data.table_id);
-      await updateReservation(reservationId, reservation);
       setComponentReload(!componentReload);
       setOccupied(false);
     }

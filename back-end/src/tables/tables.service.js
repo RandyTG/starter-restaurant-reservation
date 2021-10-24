@@ -4,7 +4,7 @@ function create(table) {
   return knex("tables")
     .insert(table)
     .returning("*")
-    .then((createdPost) => createdPost[0]);
+    .then((createdTable) => createdTable[0]);
 }
 
 function list() {
@@ -23,17 +23,28 @@ function read(tableId) {
 }
 
 function update(updatedTable) {
-  return knex("tables")
-    .select("*")
-    .where({ table_id: updatedTable.table_id })
-    .update(updatedTable, "*");
+  return knex.transaction(async (t) => {
+    await knex("reservations")
+      .where({ reservation_id: updatedTable.reservation_id })
+      .update({ status: "seated" })
+      .transacting(t);
+
+    return knex("tables")
+      .where({ table_id: updatedTable.table_id })
+      .update(updatedTable, "*");
+  });
 }
 
-function destroy(tableId) {
-  return knex("tables")
-    .select("*")
-    .where({ table_id: tableId })
-    .update({ reservation_id: null });
+function destroy(tableId, reservationId) {
+  return knex.transaction(async (t) => {
+    await knex("reservations")
+      .where({ reservation_id: reservationId })
+      .update({ status: "finished" })
+      .transacting(t);
+    return knex("tables")
+      .where({ table_id: tableId })
+      .update({ reservation_id: null });
+  });
 }
 
 module.exports = {

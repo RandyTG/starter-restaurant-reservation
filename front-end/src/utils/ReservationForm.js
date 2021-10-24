@@ -6,9 +6,18 @@ function ReservationForm({
   formData,
   history,
 }) {
-  if (formData.reservation_date && formData.reservation_date.length > 10) {
-    formData.reservation_date = formData.reservation_date.slice(0, 10);
-  }
+  const handlePhoneFormat = ({ target: { name, value } }) => {
+    value = value.replace(/[^0-9]/g, "");
+
+    if (value.length > 3 && value.length <= 6) {
+      value = value.slice(0, 3) + "-" + value.slice(3);
+    } else if (value.length > 6) {
+      value =
+        value.slice(0, 3) + "-" + value.slice(3, 6) + "-" + value.slice(6);
+    }
+
+    handleFormChange({ target: { name, value } });
+  };
 
   return (
     <form className="row g-3" onSubmit={handleSubmit}>
@@ -48,7 +57,7 @@ function ReservationForm({
           id="mobile_number"
           placeholder="xxx-xxx-xxxx"
           pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-          onChange={handleFormChange}
+          onChange={handlePhoneFormat}
           value={formData.mobile_number}
         />
         <small className="form-text text-muted">Format: xxx-xxx-xxxx</small>

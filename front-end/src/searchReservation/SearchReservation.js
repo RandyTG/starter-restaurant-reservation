@@ -23,7 +23,7 @@ function SearchReservation() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const abortController = new AbortController();
-    history.push(`/search?mobile_phone=${phoneNumber.mobile_number}`);
+    history.push(`/search?mobile_number=${phoneNumber.mobile_number}`);
     searchReservation(phoneNumber.mobile_number, abortController.signal).then(
       (data) => {
         setReservations(data);

@@ -113,6 +113,16 @@ export async function updateTable(tableId, data) {
 }
 
 export async function updateReservation(reservationId, data) {
+  const url = `${API_BASE_URL}/reservations/${reservationId}`;
+  const options = {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ data }),
+  };
+  return await fetchJson(url, options, {});
+}
+
+export async function updateStatus(reservationId, data) {
   const url = `${API_BASE_URL}/reservations/${reservationId}/status`;
   const options = {
     method: "PUT",
@@ -128,6 +138,6 @@ export async function deleteTableAssignment(tableId) {
 }
 
 export async function searchReservation(phoneNumber, signal) {
-  const url = `${API_BASE_URL}/reservations?mobile_phone=${phoneNumber}`;
+  const url = `${API_BASE_URL}/reservations?mobile_number=${phoneNumber}`;
   return await fetchJson(url, { headers, signal }, []);
 }
