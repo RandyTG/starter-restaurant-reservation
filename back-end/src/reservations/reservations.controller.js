@@ -36,6 +36,28 @@ function hasOnlyValidProperties(req, res, next) {
   next();
 }
 
+function isStatusChangeValid(req, res, next) {
+  const { data } = req.body;
+  const validStatus = ["booked", "seated", "finished", "cancelled"];
+
+  if (!validStatus.includes(data.status)) {
+    return next({
+      status: 400,
+      message: `Status ${data.status} is not valid`,
+    });
+  }
+
+  const currentReservationData = res.locals.reservation;
+  if (currentReservationData.status === "finished") {
+    return next({
+      status: 400,
+      message: "A finished reservation cannot be updated",
+    });
+  }
+
+  next();
+}
+
 function isReservationValid(req, res, next) {
   const { data } = req.body;
   const { people } = data;
@@ -125,7 +147,7 @@ function isReservationValid(req, res, next) {
       status: 400,
       message: "Reservations cannot be made after 9:30 PM.",
     });
-  } else if (isNaN(people)) {
+  } else if (typeof people !== "number") {
     return next({
       status: 400,
       message: "Reservations party needs a number of people",
@@ -170,7 +192,7 @@ async function create(req, res) {
 async function list(req, res) {
   const date = req.query.date;
   if (!date) {
-    const phoneNumber = req.query.mobile_phone;
+    const phoneNumber = req.query.mobile_number;
     const response = await service.search(phoneNumber);
     if (!response) {
       res.json({
@@ -189,12 +211,8 @@ async function list(req, res) {
   }
 }
 
-async function read(req, res) {
-  const { reservation_id } = req.params;
-  const response = await service.read(reservation_id);
-  if (!response) {
-    res.status(404).json({ error: "Reservation cannot be found" });
-  }
+function read(req, res) {
+  const response = res.locals.reservation;
   res.json({ data: response });
 }
 
@@ -205,13 +223,19 @@ async function update(req, res) {
     ...req.body.data,
     reservation_id: reservation_id,
   };
-  await service.update(updatedReservation);
-  res.sendStatus(204);
+  const data = await service.update(updatedReservation);
+  res.json({ data });
 }
 
 module.exports = {
+  updateStatus: [
+    asyncErrorBoundary(reservationExists),
+    isStatusChangeValid,
+    asyncErrorBoundary(update),
+  ],
   update: [
     asyncErrorBoundary(reservationExists),
+    hasRequiredProperties,
     isReservationValid,
     asyncErrorBoundary(update),
   ],
@@ -222,5 +246,5 @@ module.exports = {
     asyncErrorBoundary(create),
   ],
   list: asyncErrorBoundary(list),
-  read: asyncErrorBoundary(read),
+  read: [asyncErrorBoundary(reservationExists), read],
 };

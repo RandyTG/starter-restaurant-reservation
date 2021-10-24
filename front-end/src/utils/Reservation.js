@@ -1,5 +1,5 @@
 import React from "react";
-import { updateReservation } from "../utils/api";
+import { updateStatus } from "../utils/api";
 
 function Reservation({
   reservation,
@@ -16,7 +16,7 @@ function Reservation({
       )
     ) {
       reservation.status = "cancelled";
-      await updateReservation(reservation.reservation_id, reservation);
+      await updateStatus(reservation.reservation_id, reservation);
       setComponentReload(!componentReload);
     }
   };

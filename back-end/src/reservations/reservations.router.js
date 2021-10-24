@@ -16,11 +16,18 @@ router
 
 router
   .route("/:reservation_id/status")
-  .put(controller.update)
+  .get(controller.read)
+  .put(controller.updateStatus)
   .all(methodNotAllowed);
 
 router
   .route("/:reservation_id/seat")
+  .get(controller.read)
+  .all(methodNotAllowed);
+
+router
+  .route("/:reservation_id")
+  .put(controller.update)
   .get(controller.read)
   .all(methodNotAllowed);
 

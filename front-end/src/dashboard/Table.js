@@ -3,7 +3,6 @@ import { deleteTableAssignment } from "../utils/api";
 
 function Table({ data, setComponentReload, componentReload }) {
   const [occupied, setOccupied] = useState(data.reservation_id ? true : false);
-  const reservationId = data.reservation_id;
 
   const unseatButtonHandler = async () => {
     if (
@@ -11,7 +10,6 @@ function Table({ data, setComponentReload, componentReload }) {
         "Is this table ready to seat new guests? This cannot be undone."
       )
     ) {
-      const abortController = new AbortController();
       await deleteTableAssignment(data.table_id);
       setComponentReload(!componentReload);
       setOccupied(false);

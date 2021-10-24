@@ -17,12 +17,18 @@ function NewReservation() {
     status: "booked",
   });
 
-  console.log(formData.people);
   const handleFormChange = ({ target: { name, value } }) => {
-    setFormData((previousFormData) => ({
-      ...previousFormData,
-      [name]: value,
-    }));
+    if (name === "people") {
+      setFormData((previousFormData) => ({
+        ...previousFormData,
+        [name]: Number(value),
+      }));
+    } else {
+      setFormData((previousFormData) => ({
+        ...previousFormData,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (event) => {
