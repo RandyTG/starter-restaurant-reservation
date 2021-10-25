@@ -132,16 +132,16 @@ function isReservationValid(req, res, next) {
         "Reservations cannot be made on a Tuesday as the restaurant is closed.",
     });
   } else if (
-    adjustedDate.getHours() <= 10 ||
-    (adjustedDate.getHours() <= 10 && adjustedDate.getMinutes() <= 29)
+    date.getHours() <= 10 ||
+    (date.getHours() <= 10 && date.getMinutes() <= 29)
   ) {
     return next({
       status: 400,
       message: "Reservations cannot be made before 10:30 AM.",
     });
   } else if (
-    adjustedDate.getHours() >= 21 ||
-    (adjustedDate.getHours() >= 21 && adjustedDate.getMinutes() >= 31)
+    date.getHours() >= 21 ||
+    (date.getHours() >= 21 && date.getMinutes() >= 31)
   ) {
     return next({
       status: 400,

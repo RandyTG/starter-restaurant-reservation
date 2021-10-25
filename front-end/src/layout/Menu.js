@@ -22,31 +22,33 @@ function Menu() {
         </Link>
         <hr className="sidebar-divider  my-0" />
         <ul
-          className="nav navbar-nav text-light d-sm-flex flex-md-column flex-row"
+          className="nav navbar-nav text-light d-sm-flex flex-md-column flex-row justify-content-evenly"
           id="accordionSidebar"
         >
           <li className="nav-item me-2 ">
             <Link className="nav-link" to="/dashboard">
-              <span className="oi oi-dashboard" />
-              &nbsp;Dashboard
+              <span className="oi oi-home pe-4 ps-3 pe-sm-0" />
+              <span className="d-none d-sm-inline-block">&nbsp;Dashboard</span>
             </Link>
           </li>
           <li className="nav-item me-2 ">
             <Link className="nav-link" to="/search">
-              <span className="oi oi-magnifying-glass" />
-              &nbsp;Search
+              <span className="oi oi-magnifying-glass pe-4 ps-3 pe-sm-0" />
+              <span className="d-none d-sm-inline-block">&nbsp;Search</span>
             </Link>
           </li>
           <li className="nav-item me-2 ">
             <Link className="nav-link" to="/reservations/new">
-              <span className="oi oi-plus" />
-              &nbsp;New Reservation
+              <span className="oi oi-plus pe-4 ps-3 pe-sm-0" />
+              <span className="d-none d-sm-inline-block">
+                &nbsp;New Reservation
+              </span>
             </Link>
           </li>
           <li className="nav-item me-2 ">
             <Link className="nav-link" to="/tables/new">
-              <span className="oi oi-layers" />
-              &nbsp;New Table
+              <span className="oi oi-layers pe-4 ps-3 pe-sm-0" />
+              <span className="d-none d-sm-inline-block">&nbsp;New Table</span>
             </Link>
           </li>
         </ul>
