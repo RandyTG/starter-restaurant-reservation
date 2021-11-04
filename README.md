@@ -10,7 +10,7 @@ There are no user stories for logging: it is expected that you will add logging 
 
 ## Links
 
-[App Demo](https://restaurant-reservation-manager.vercel.app/dashboard)
+* [App Demo](https://restaurant-reservation-manager.vercel.app/dashboard)
 
 ## Existing files
 
