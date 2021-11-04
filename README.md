@@ -8,6 +8,10 @@ There are no user stories for deployment: it is expected that you will deploy th
 
 There are no user stories for logging: it is expected that you will add logging to the application with enough detail to help you diagnose issues in production.
 
+## Links
+
+[App Demo](https://restaurant-reservation-manager.vercel.app/dashboard)
+
 ## Existing files
 
 This repository is set up as a *monorepo*, meaning that the frontend and backend projects are in one repository. This allows you to open both projects in the same editor.
